@@ -1,0 +1,107 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Chart.Name }}-config
+  labels:
+    app: {{ .Chart.Name }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+data:
+  config.yaml: |
+    server:
+      http:
+        port: {{ .Values.env.httpPort | default "8080" }}
+        host: "0.0.0.0"
+      grpc:
+        port: {{ .Values.env.grpcPort | default "50051" }}
+        host: "0.0.0.0"
+
+    database:
+      mongo:
+        uri: {{ .Values.mongo.uri | default "mongodb://mongo:27017" }}
+        database: "orders"
+        collection: "orders"
+        timeout: 30s
+
+    kafka:
+      brokers: {{ .Values.kafka.brokers | default "kafka:9092" }}
+      topic: {{ .Values.kafka.topic | default "order-events" }}
+      groupId: "order-service"
+      writer:
+        batchSize: 100
+        batchTimeout: 1s
+        requiredAcks: 1
+
+    logging:
+      level: "info"
+      format: "json"
+
+    metrics:
+      enabled: true
+      port: 9090
+
+  app.properties: |
+    # Application Properties
+    app.name=order-service
+    app.version={{ .Chart.AppVersion }}
+    app.environment=production
+
+    # Server Configuration
+    server.http.port={{ .Values.env.httpPort | default "8080" }}
+    server.grpc.port={{ .Values.env.grpcPort | default "50051" }}
+
+    # Database Configuration
+    db.mongo.uri={{ .Values.mongo.uri | default "mongodb://mongo:27017" }}
+    db.mongo.database=orders
+    db.mongo.collection=orders
+    db.mongo.timeout=30
+
+    # Kafka Configuration
+    kafka.brokers={{ .Values.kafka.brokers | default "kafka:9092" }}
+    kafka.topic={{ .Values.kafka.topic | default "order-events" }}
+    kafka.groupId=order-service
+
+    # Logging Configuration
+    logging.level=info
+    logging.format=json
+
+  nginx.conf: |
+    # NGINX configuration for API gateway (если нужно)
+    server {
+        listen 80;
+        server_name order-service;
+
+        location /api/ {
+            proxy_pass http://{{ .Chart.Name }}:{{ .Values.service.port }};
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+
+        location /health {
+            proxy_pass http://{{ .Chart.Name }}:{{ .Values.service.port }}/health;
+        }
+    }
+
+  init-database.js: |
+    // MongoDB initialization script
+    db = db.getSiblingDB('orders');
+
+    // Create collections
+    db.createCollection('orders');
+
+    // Create indexes
+    db.orders.createIndex({ "created_at": -1 });
+    db.orders.createIndex({ "status": 1 });
+    db.orders.createIndex({ "product": 1 });
+
+    // Insert sample data (optional)
+    db.orders.insertOne({
+        _id: "sample-order-1",
+        product: "Sample Product",
+        quantity: 1,
+        price: 99.99,
+        status: "completed",
+        created_at: new Date()
+    });
+
+    print("Orders database initialized successfully");

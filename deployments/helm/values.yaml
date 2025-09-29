@@ -1,0 +1,32 @@
+replicaCount: 1
+
+image:
+  repository: order-service
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 8080
+  grpcPort: 50051
+
+mongo:
+  enabled: true
+  uri: "mongodb://admin:password@mongo:27017"
+  database: "orders"
+  collection: "orders"
+
+kafka:
+  enabled: true
+  brokers: "kafka:9092"
+  topic: "order-events"
+  groupId: "order-service"
+
+env:
+  httpPort: "8080"
+  grpcPort: "50051"
+
+config:
+  logging:
+    level: "info"
+    format: "json"

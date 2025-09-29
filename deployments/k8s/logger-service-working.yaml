@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logger-service
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logger-service
+  template:
+    metadata:
+      labels:
+        app: logger-service
+    spec:
+      containers:
+        - name: logger-service
+          image: bitnami/kafka:3.4
+          command:
+            - /bin/bash
+            - -c
+            - |
+              echo "Starting Kafka Logger Service..."
+              echo "Testing Kafka connection..."
+              
+              # Ждем пока Kafka станет доступна
+              until kafka-topics.sh --bootstrap-server kafka:9092 --list > /dev/null 2>&1; do
+                echo "Waiting for Kafka to be ready..."
+                sleep 5
+              done
+              
+              echo "Kafka is ready! Available topics:"
+              kafka-topics.sh --bootstrap-server kafka:9092 --list
+              
+              echo "Starting to consume messages from order-events topic..."
+              echo "=== ORDER EVENTS LOG ===" > /var/log/order-events.log
+              echo "Started at: $(date)" >> /var/log/order-events.log
+              echo "========================" >> /var/log/order-events.log
+              
+              # Запускаем consumer и пишем в файл
+              kafka-console-consumer.sh \
+                --bootstrap-server kafka:9092 \
+                --topic order-events \
+                --from-beginning >> /var/log/order-events.log
+          volumeMounts:
+            - name: log-volume
+              mountPath: /var/log
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "200m"
+      volumes:
+        - name: log-volume
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: logger-service
+  namespace: default
+spec:
+  selector:
+    app: logger-service
+  ports:
+    - port: 8080
+      targetPort: 8080
