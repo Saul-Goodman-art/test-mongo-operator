@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "orders-app.fullname" . }}-logger
+  labels:
+    app: orders-logger
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orders-logger
+  template:
+    metadata:
+      labels:
+        app: orders-logger
+    spec:
+      containers:
+        - name: logger
+          image: "{{ .Values.image.logger.repository }}:{{ .Values.image.logger.tag }}"
+          imagePullPolicy: {{ .Values.image.logger.pullPolicy }}
+          volumeMounts:
+            - name: logdir
+              mountPath: /var/log
+      volumes:
+        - name: logdir
+          emptyDir: {}

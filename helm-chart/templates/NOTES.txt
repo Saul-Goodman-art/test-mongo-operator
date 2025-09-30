@@ -1,0 +1,7 @@
+1. Images used for api/logger are taken from Helm values (defaults to local images orders-api:0.1 and orders-logger:0.1).\
+   Build them locally and load into kind (see README).
+
+2. To access API locally run port-forwarding:
+   kubectl port-forward svc/{{ .Release.Name }}-api 8080:80 -n {{ .Release.Namespace }}
+
+3. Logs for logger are stored in a pod's /var/log/orders.log (emptyDir) — for persistent logs, change volume to a PersistentVolumeClaim.

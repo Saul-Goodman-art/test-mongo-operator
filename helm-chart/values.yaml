@@ -1,0 +1,61 @@
+replicaCount: 1
+
+image:
+  api:
+    repository: orders-api
+    tag: latest
+    pullPolicy: Never
+  logger:
+    repository: orders-logger
+    tag: latest
+    pullPolicy: Never
+  kafka:
+    pullPolicy: IfNotPresent
+  mongodb:
+    pullPolicy: IfNotPresent
+
+
+service:
+  api:
+    port: 80
+    targetPort: 8080
+
+mongodb:
+  enabled: true
+  auth:
+    enabled: false
+  fullnameOverride: mongodb
+  architecture: standalone
+  replicaSet:
+    enabled: false
+  primary:
+    persistence:
+      enabled: false
+
+kafka:
+  enabled: true
+  replicaCount: 1
+  zookeeper:
+    replicaCount: 1
+    persistence:
+      enabled: false
+  persistence:
+    enabled: false
+#  image:
+#    repository: bitnami/cp-kafka
+#    tag: latest # Можно заменить на конкретную версию, если известно
+
+migration:
+  enabled: true
+  image:
+    repository: bitnami/mongodb
+#    tag: latest
+    pullPolicy: IfNotPresent
+
+resources: {}
+
+podAnnotations: {}
+
+# Настройки логирования / volumes
+logger:
+  logPath: /var/log/orders.log
