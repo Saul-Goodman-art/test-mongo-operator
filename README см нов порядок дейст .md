@@ -47,6 +47,11 @@ helm install orders-app . --namespace orders --create-namespace
         если нужно удалить и переустанвить:
         helm uninstall order-service
         helm install order-service .
+        
+        или еще такой вариант команды:
+        helm uninstall orders-app -n orders
+        helm install orders-app . --namespace orders --create-namespace
+
 ```
 
 ## 3) Проверка

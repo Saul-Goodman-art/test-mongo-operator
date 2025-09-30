@@ -10,7 +10,7 @@ spec:
       initContainers:
         - name: wait-for-mongo
           image: busybox
-          command: ['sh','-c','until nslookup {{ include "orders-app.fullname" . }}-mongodb; do echo waiting; sleep 2; done']
+          command: ['sh','-c','until nslookup {{ include "orders-app.fullname" . }}-mongodb.{{ .Release.Namespace }}.svc.cluster.local; do echo waiting; sleep 2; done']
       containers:
         - name: migrate
           image: "{{ .Values.migration.image.repository }}:{{ .Values.migration.image.tag }}"
@@ -18,8 +18,8 @@ spec:
           args:
             - |
               echo "Waiting for Mongo to accept connections..."
-              until mongo --host {{ include "orders-app.fullname" . }}-mongodb --eval 'db.adminCommand({ ping: 1 })' > /dev/null 2>&1; do sleep 1; done
-              mongo --host {{ include "orders-app.fullname" . }}-mongodb ordersdb --eval '
+              until mongo --host {{ include "orders-app.fullname" . }}-mongodb.{{ .Release.Namespace }}.svc.cluster.local --eval 'db.adminCommand({ ping: 1 })' > /dev/null 2>&1; do sleep 1; done
+              mongo --host {{ include "orders-app.fullname" . }}-mongodb.{{ .Release.Namespace }}.svc.cluster.local ordersdb --eval '
                 db.orders.insertMany([
                   {customer: "Ivan", item: "Book", amount: 12.5},
                   {customer: "Anna", item: "Pen", amount: 2.3},
