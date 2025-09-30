@@ -22,9 +22,9 @@ spec:
             - containerPort: 8080
           env:
             - name: MONGO_URI
-              value: "mongodb://mongodb:27017"
+              value: "mongodb://orders-app-mongodb:27017"
             - name: KAFKA_BROKER
-              value: "kafka:9092"
+              value: "orders-app-kafka:9092"
           readinessProbe:
             httpGet:
               path: /orders

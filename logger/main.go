@@ -17,7 +17,7 @@ func main() {
 	defer file.Close()
 
 	r := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:   []string{"kafka:9092"},
+		Brokers:   []string{"orders-app-kafka:9092"},
 		Topic:     "orders",
 		GroupID:   "logger-group",
 		Partition: 0,

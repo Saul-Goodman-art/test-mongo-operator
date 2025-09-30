@@ -20,13 +20,15 @@ C:\Users\l1bxc>kind create cluster --name my-gpt-cluster
 !!
 
 # из корня проекта
-docker build -t orders-api:0.1 ./api
-docker build -t orders-logger:0.1 ./logger
+docker build -t orders-api:0.3 ./api
+docker build -t orders-logger:0.3 ./logger
 
 # Загрузить образы в kind
-kind load docker-image orders-api:0.1 --name kind-control-plane
-kind load docker-image orders-logger:0.1 --name kind-control-plane
+kind load docker-image orders-api:0.3 --name my-6-gpt-cluster
+kind load docker-image orders-logger:0.3 --name my-6-gpt-cluster
 ```
+# помним, что теперь мы отказались от битнами зависимостей, и 
+# теперь образы монги , кафки, зоокипера надо самому грузить в кластер
 
 ## 2) Установка chart
 ```powershell

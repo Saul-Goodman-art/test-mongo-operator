@@ -3,11 +3,11 @@ replicaCount: 1
 image:
   api:
     repository: orders-api
-    tag: "0.2"
+    tag: "0.3"
     pullPolicy: IfNotPresent
   logger:
     repository: orders-logger
-    tag: "0.2"
+    tag: "0.3"
     pullPolicy: IfNotPresent
 
 service:
