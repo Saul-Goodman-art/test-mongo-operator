@@ -7,27 +7,22 @@ spec:
   template:
     spec:
       restartPolicy: Never
+      initContainers:
+        - name: wait-for-mongo
+          image: busybox
+          command: ['sh','-c','until nslookup {{ include "orders-app.fullname" . }}-mongodb; do echo waiting; sleep 2; done']
       containers:
         - name: migrate
           image: "{{ .Values.migration.image.repository }}:{{ .Values.migration.image.tag }}"
           command: ["bash","-lc"]
           args:
             - |
-              cat <<'JS' > /tmp/migrate.js
-              conn = new Mongo();
-              db = conn.getDB("ordersdb");
-              db.orders.insertMany([
-                {customer: "Ivan", item: "Book", amount: 12.5},
-                {customer: "Anna", item: "Pen", amount: 2.3},
-                {customer: "Sergey", item: "Notebook", amount: 5.0}
-              ]);
-              JS
-              mongo --host mongodb --eval "load('/tmp/migrate.js')"
-          env:
-            - name: MONGO_HOST
-              value: mongodb
-      # Запуск после поднятия mongodb
-      initContainers:
-        - name: wait-for-mongo
-          image: busybox
-          command: ['sh','-c','until nslookup mongodb; do echo waiting; sleep 2; done']
+              echo "Waiting for Mongo to accept connections..."
+              until mongo --host {{ include "orders-app.fullname" . }}-mongodb --eval 'db.adminCommand({ ping: 1 })' > /dev/null 2>&1; do sleep 1; done
+              mongo --host {{ include "orders-app.fullname" . }}-mongodb ordersdb --eval '
+                db.orders.insertMany([
+                  {customer: "Ivan", item: "Book", amount: 12.5},
+                  {customer: "Anna", item: "Pen", amount: 2.3},
+                  {customer: "Sergey", item: "Notebook", amount: 5.0}
+                ])
+              '

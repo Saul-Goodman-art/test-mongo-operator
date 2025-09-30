@@ -1,14 +1,5 @@
 apiVersion: v2
 name: orders-app
 description: A simple orders API + logger with Kafka and MongoDB
-version: 0.1.1
-appVersion: "0.1.1"
-dependencies:
-  - name: mongodb
-    version: 16.5.45
-    repository: https://charts.bitnami.com/bitnami
-    condition: mongodb.enabled
-  - name: kafka
-    version: 32.4.3
-    repository: https://charts.bitnami.com/bitnami
-    condition: kafka.enabled
+version: 0.2.0
+appVersion: "0.2.0"

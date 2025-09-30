@@ -3,59 +3,57 @@ replicaCount: 1
 image:
   api:
     repository: orders-api
-    tag: latest
-    pullPolicy: Never
+    tag: "0.2"
+    pullPolicy: IfNotPresent
   logger:
     repository: orders-logger
-    tag: latest
-    pullPolicy: Never
-  kafka:
+    tag: "0.2"
     pullPolicy: IfNotPresent
-  mongodb:
-    pullPolicy: IfNotPresent
-
 
 service:
   api:
     port: 80
     targetPort: 8080
 
-mongodb:
+# Новые секции: образы для Mongo / ZooKeeper / Kafka
+mongo:
   enabled: true
-  auth:
+  image:
+    repository: mongo
+    tag: "5.0"    # использую 5.x чтобы в контейнере доступна команда `mongo`
+    pullPolicy: IfNotPresent
+  persistence:
     enabled: false
-  fullnameOverride: mongodb
-  architecture: standalone
-  replicaSet:
-    enabled: false
-  primary:
-    persistence:
-      enabled: false
+
+zookeeper:
+  enabled: true
+  image:
+    repository: confluentinc/cp-zookeeper
+    tag: "7.4.0"
+    pullPolicy: IfNotPresent
+  replicaCount: 1
 
 kafka:
   enabled: true
+  image:
+    repository: confluentinc/cp-kafka
+    tag: "7.4.0"
+    pullPolicy: IfNotPresent
   replicaCount: 1
-  zookeeper:
-    replicaCount: 1
-    persistence:
-      enabled: false
-  persistence:
-    enabled: false
-#  image:
-#    repository: bitnami/cp-kafka
-#    tag: latest # Можно заменить на конкретную версию, если известно
+  config:
+    # KAFKA_ADVERTISED_LISTENERS будет настроен в шаблонах
+    offsetsTopicReplicationFactor: 1
 
 migration:
   enabled: true
   image:
-    repository: bitnami/mongodb
-#    tag: latest
+    repository: mongo
+    tag: "5.0"
     pullPolicy: IfNotPresent
 
 resources: {}
 
 podAnnotations: {}
 
-# Настройки логирования / volumes
 logger:
   logPath: /var/log/orders.log

@@ -42,6 +42,11 @@ helm dependency update
 
 
 helm install orders-app . --namespace orders --create-namespace
+
+## примечание:
+        если нужно удалить и переустанвить:
+        helm uninstall order-service
+        helm install order-service .
 ```
 
 ## 3) Проверка
