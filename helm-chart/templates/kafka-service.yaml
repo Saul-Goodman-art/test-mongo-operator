@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: {{ include "orders-app.fullname" . }}-kafka
   labels:
-    app: orders-kafka
+    app: orders-app-kafka
 spec:
   type: ClusterIP
   ports:
@@ -12,4 +12,4 @@ spec:
       protocol: TCP
       name: kafka
   selector:
-    app: orders-kafka
+    app: orders-app-kafka

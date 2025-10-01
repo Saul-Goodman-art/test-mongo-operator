@@ -3,16 +3,16 @@ kind: Deployment
 metadata:
   name: {{ include "orders-app.fullname" . }}-kafka
   labels:
-    app: orders-kafka
+    app: orders-app-kafka
 spec:
   replicas: {{ .Values.kafka.replicaCount }}
   selector:
     matchLabels:
-      app: orders-kafka
+      app: orders-app-kafka
   template:
     metadata:
       labels:
-        app: orders-kafka
+        app: orders-app-kafka
     spec:
       containers:
         - name: kafka

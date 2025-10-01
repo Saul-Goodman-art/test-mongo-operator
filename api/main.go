@@ -37,7 +37,7 @@ func main() {
 	ordersCollection = client.Database("ordersdb").Collection("orders")
 
 	kafkaWriter = &kafka.Writer{
-		Addr:     kafka.TCP("kafka:9092"),
+		Addr:     kafka.TCP("orders-app-kafka:9092"),
 		Topic:    "orders",
 		Balancer: &kafka.LeastBytes{},
 	}
