@@ -28,7 +28,7 @@ spec:
           readinessProbe:
             httpGet:
               path: /orders
-              port: 8080
+              port: 8000
             initialDelaySeconds: 5
             periodSeconds: 10
 

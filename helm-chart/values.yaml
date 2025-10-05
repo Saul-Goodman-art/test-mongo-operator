@@ -3,17 +3,17 @@ replicaCount: 1
 image:
   api:
     repository: orders-api
-    tag: "0.5"
+    tag: "0.6"
     pullPolicy: IfNotPresent
   logger:
     repository: orders-logger
-    tag: "0.5"
+    tag: "0.6"
     pullPolicy: IfNotPresent
 
 service:
   api:
-    port: 80
-    targetPort: 8080
+    port: 8000
+    targetPort: 8000
 
 # Новые секции: образы для Mongo / ZooKeeper / Kafka
 mongo:

@@ -46,8 +46,8 @@ func main() {
 	r.HandleFunc("/orders", createOrder).Methods("POST")
 	r.HandleFunc("/orders", listOrders).Methods("GET")
 
-	log.Println("API server running on :8080")
-	log.Fatal(http.ListenAndServe(":8080", r))
+	log.Println("API server running on :8000")
+	log.Fatal(http.ListenAndServe(":8000", r))
 }
 
 func createOrder(w http.ResponseWriter, r *http.Request) {
