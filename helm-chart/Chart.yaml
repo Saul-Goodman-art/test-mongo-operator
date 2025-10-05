@@ -2,4 +2,4 @@ apiVersion: v2
 name: orders-app
 description: A simple orders API + logger with Kafka and MongoDB
 version: 0.3.0
-appVersion: "0.3.0"
+appVersion: "0.3.1"
