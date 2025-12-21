@@ -66,7 +66,11 @@ kubectl get jobs -n orders
 
 ## 4) Тест API
 ```powershell
-kubectl port-forward svc/orders-app-api 8080:80 -n orders
+
+[//]: # (kubectl port-forward svc/orders-app-api 8080:80 -n orders)
+
+kubectl port-forward svc/orders-app-api 8000:8000 -n orders
+
 # В другом окне
 curl -X POST http://localhost:8080/orders -H "Content-Type: application/json" -d '{"customer":"Test","item":"Toy","amount":9.9}'
 curl http://localhost:8080/orders
