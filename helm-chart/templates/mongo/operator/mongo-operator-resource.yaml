@@ -1,0 +1,49 @@
+apiVersion: mongodbcommunity.mongodb.com/v1
+kind: MongoDBCommunity
+metadata:
+  name: {{ include "orders-app.fullname" . }}-mongodb
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "orders-app.fullname" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+spec:
+  # Количество членов в replica set (рекомендуется 3 для отказоустойчивости)
+  members: {{ .Values.mongodb.members }}
+  type: ReplicaSet
+  version: "{{ .Values.mongodb.version }}"
+
+  # Настройки безопасности: включаем аутентификацию SCRAM
+  security:
+    authentication:
+      modes: ["SCRAM"]
+
+  # Пользователи, которые будут созданы в MongoDB
+  users:
+    - name: {{ .Values.mongodb.auth.username }}
+      db: admin
+      passwordSecretRef:
+        # Ссылка на секрет, созданный выше
+        name: {{ include "orders-app.fullname" . }}-mongodb-user-password
+      roles:
+        - name: clusterAdmin
+          db: admin
+        - name: readWrite
+          db: {{ .Values.mongodb.database }}
+      # Техническое поле, обязательно для оператора
+      scramCredentialsSecretName: {{ include "orders-app.fullname" . }}-mongodb-user-password
+
+  # Дополнительные настройки StatefulSet, который создаст оператор
+  statefulSet:
+    spec:
+      # Шаблон для постоянного хранилища
+      volumeClaimTemplates:
+        - metadata:
+            name: data-volume
+          spec:
+            # УКАЖИТЕ КОРРЕКТНЫЙ STORAGECLASS ДЛЯ ВАШЕГО КЛАСТЕРА
+            storageClassName: {{ .Values.mongodb.persistence.storageClass | default "standard" }}
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: {{ .Values.mongodb.persistence.size | default "1Gi" }}

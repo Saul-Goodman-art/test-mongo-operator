@@ -3,8 +3,11 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -30,14 +33,26 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://orders-app-mongodb:27017"))
+	//client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://orders-app-mongodb:27017"))
+
+	// СТАЛО (правильный вариант):
+	mongoURI := fmt.Sprintf(
+		"mongodb://%s:%s@%s:27017/%s?authSource=admin",
+		os.Getenv("MONGO_USERNAME"),
+		os.Getenv("MONGO_PASSWORD"),
+		os.Getenv("MONGO_HOST"), // Используем отдельную переменную для хоста
+		os.Getenv("MONGO_DATABASE"),
+	)
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
+
+	//
 	if err != nil {
 		log.Fatal(err)
 	}
 	ordersCollection = client.Database("ordersdb").Collection("orders")
 
 	kafkaWriter = &kafka.Writer{
-		Addr:     kafka.TCP("orders-app-kafka:9092"),
+		Addr:     kafka.TCP("orders-app-test-kafka:9092"),
 		Topic:    "orders",
 		Balancer: &kafka.LeastBytes{},
 	}
@@ -60,14 +75,41 @@ func createOrder(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err := ordersCollection.InsertOne(ctx, order)
+	// Сохраняем в MongoDB
+	result, err := ordersCollection.InsertOne(ctx, order)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	// Получаем ID из MongoDB
+	if oid, ok := result.InsertedID.(primitive.ObjectID); ok {
+		order.ID = oid.Hex()
+	}
+
+	// Отправляем в Kafka С ОБРАБОТКОЙ ОШИБОК
 	msg, _ := json.Marshal(order)
-	kafkaWriter.WriteMessages(ctx, kafka.Message{Value: msg})
+	kafkaMsg := kafka.Message{
+		Key:   []byte(order.ID),
+		Value: msg,
+		Time:  time.Now(),
+	}
+
+	// Логируем попытку отправки
+	log.Printf("Sending to Kafka: %s", string(msg))
+
+	// Пытаемся отправить с таймаутом
+	kafkaCtx, kafkaCancel := context.WithTimeout(ctx, 3*time.Second)
+	defer kafkaCancel()
+
+	err = kafkaWriter.WriteMessages(kafkaCtx, kafkaMsg)
+	if err != nil {
+		// Логируем ошибку, но не прерываем запрос
+		log.Printf("WARNING: Failed to send to Kafka: %v", err)
+		// Можно продолжать, так как заказ уже сохранён в MongoDB
+	} else {
+		log.Printf("SUCCESS: Sent to Kafka: %s", order.ID)
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(order)

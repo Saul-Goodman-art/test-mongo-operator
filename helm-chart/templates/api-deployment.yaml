@@ -19,16 +19,27 @@ spec:
           image: "{{ .Values.image.api.repository }}:{{ .Values.image.api.tag }}"
           imagePullPolicy: {{ .Values.image.api.pullPolicy }}
           ports:
-            - containerPort: 8080
+            - containerPort: 8000  # ИЗМЕНИТЬ с 8080 на 8000
           env:
-            - name: MONGO_URI
-              value: "mongodb://orders-app-mongodb:27017"
             - name: KAFKA_BROKER
-              value: "orders-app-kafka:9092"
+              value: "orders-app-test-kafka:9092"  # Должно быть правильное имя
+            - name: MONGO_USERNAME
+              value: "{{ .Values.mongodb.auth.username }}"
+            - name: MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "orders-app.fullname" . }}-mongodb-user-password
+                  key: password
+            - name: MONGO_HOST
+              value: "{{ include "orders-app.mongodbServiceName" . }}.{{ .Release.Namespace }}.svc.cluster.local"
+            - name: MONGO_DATABASE
+              value: "{{ .Values.mongodb.database }}"
+            - name: APP_NAME
+              value: "{{ .Release.Name }}"
           readinessProbe:
             httpGet:
               path: /orders
-              port: 8000
-            initialDelaySeconds: 5
+              port: 8000  # Уже правильно
+            initialDelaySeconds: 10  # Увеличить с 5 до 10, чтобы дать время на подключение к MongoDB
             periodSeconds: 10
-
+            timeoutSeconds: 5  # Добавить явный timeout

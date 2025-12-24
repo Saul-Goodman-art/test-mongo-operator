@@ -3,11 +3,11 @@ replicaCount: 1
 image:
   api:
     repository: orders-api
-    tag: "0.8"
+    tag: "0.17"
     pullPolicy: IfNotPresent
   logger:
     repository: orders-logger
-    tag: "0.8"
+    tag: "0.17"
     pullPolicy: IfNotPresent
 
 service:
@@ -57,3 +57,34 @@ podAnnotations: {}
 
 logger:
   logPath: /var/log/orders.log
+
+
+  # ... существующие настройки (image, service, kafka, zookeeper)
+
+# НОВАЯ СЕКЦИЯ: Настройки MongoDB через оператор
+mongodb:
+  # Количество реплик в кластере (рекомендуется 3 для продакшена, 1 для тестов)
+  members: 2
+  # Версия MongoDB
+  version: "6.0.6"
+  # Имя базы данных, которую будет использовать приложение
+  database: "ordersdb"
+
+#  serviceName: "orders-app-test-mongodb-svc"  # Или оставьте пустым для автоопределения
+  serviceName:   # Или оставьте пустым для автоопределения
+
+  # Настройки аутентификации
+  auth:
+    username: "orderServiceUser"
+    # ПАРОЛЬ БУДЕТ ЗАКОДИРОВАН В BASE64 ПРИ УСТАНОВКЕ
+    password: "StrongPassword123!"  # ЗАМЕНИТЕ на свой надежный пароль!
+
+  # Настройки хранилища
+  persistence:
+    enabled: true
+    # StorageClass зависит от вашего кластера:
+    # - Minikube: "standard"
+    # - Kind: "standard" (но может потребовать ручной настройки)
+    # - Cloud (GKE/EKS/AKS): укажите соответствующий класс
+    storageClass: "standard"
+    size: "1Gi"
