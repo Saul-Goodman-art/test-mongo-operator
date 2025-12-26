@@ -16,7 +16,7 @@ func main() {
 
 	kafkaBroker := os.Getenv("KAFKA_BROKER")
 	if kafkaBroker == "" {
-		kafkaBroker = "orders-app-test-kafka:9092"
+		kafkaBroker = "orders-app-kafka:9092"
 	}
 	log.Printf("Using Kafka broker: %s", kafkaBroker)
 

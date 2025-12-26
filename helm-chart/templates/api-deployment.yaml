@@ -22,7 +22,7 @@ spec:
             - containerPort: 8000  # ИЗМЕНИТЬ с 8080 на 8000
           env:
             - name: KAFKA_BROKER
-              value: "orders-app-test-kafka:9092"  # Должно быть правильное имя
+              value: "orders-app-kafka:9092"  # Должно быть правильное имя
             - name: MONGO_USERNAME
               value: "{{ .Values.mongodb.auth.username }}"
             - name: MONGO_PASSWORD

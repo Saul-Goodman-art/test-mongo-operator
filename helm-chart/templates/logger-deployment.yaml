@@ -20,7 +20,7 @@ spec:
           imagePullPolicy: {{ .Values.image.logger.pullPolicy }}
           env:
             - name: KAFKA_BROKER
-              value: "orders-app-test-kafka:9092"
+              value: "orders-app-kafka:9092"
           volumeMounts:
             - name: logdir
               mountPath: /var/log
