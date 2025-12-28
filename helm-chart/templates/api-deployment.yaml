@@ -20,9 +20,11 @@ spec:
           imagePullPolicy: {{ .Values.image.api.pullPolicy }}
           ports:
             - containerPort: 8000  # ИЗМЕНИТЬ с 8080 на 8000
+
+          envFrom:
+            - configMapRef:
+                name: {{ include "orders-app.fullname" . }}-api-config
           env:
-            - name: KAFKA_BROKER
-              value: "orders-app-kafka:9092"  # Должно быть правильное имя
             - name: MONGO_USERNAME
               value: "{{ .Values.mongodb.auth.username }}"
             - name: MONGO_PASSWORD
@@ -30,12 +32,7 @@ spec:
                 secretKeyRef:
                   name: {{ include "orders-app.fullname" . }}-mongodb-user-password
                   key: password
-            - name: MONGO_HOST
-              value: "{{ include "orders-app.mongodbServiceName" . }}.{{ .Release.Namespace }}.svc.cluster.local"
-            - name: MONGO_DATABASE
-              value: "{{ .Values.mongodb.database }}"
-            - name: APP_NAME
-              value: "{{ .Release.Name }}"
+
           readinessProbe:
             httpGet:
               path: /orders

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "orders-app.fullname" . }}-api-config
+data:
+  KAFKA_BROKER: "{{ include "orders-app.fullname" . }}-kafka:9092"
+  MONGO_HOST: "{{ include "orders-app.mongodbServiceName" . }}.{{ .Release.Namespace }}.svc.cluster.local"
+  MONGO_DATABASE: "{{ .Values.mongodb.database }}"
+  APP_NAME: "{{ .Release.Name }}"

@@ -24,3 +24,6 @@ subjects:
   - kind: ServiceAccount
     name: mongodb-database
     namespace: mongodb-operator
+
+#    ServiceAccount mongodb-database —
+#    это "пользователь" Kubernetes, от имени которого работает MongoDB Community Operator.
